@@ -33,3 +33,7 @@ pids
 
 # Optional: macOS specific
 ._*
+
+# Optional: macOS specific
+.DS_Store
+

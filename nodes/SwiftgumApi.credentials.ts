@@ -4,7 +4,7 @@ export class SwiftgumApi implements ICredentialType {
   name = 'swiftgumApi';
   displayName = 'Swiftgum API';
   // icon = 'file:swiftgum.png';
-  documentationUrl = 'https://docs.swiftgum.com';
+  documentationUrl = 'https://app.swiftgum.com';
 
   properties: INodeProperties[] = [
     {

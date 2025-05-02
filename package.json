@@ -1,9 +1,14 @@
 {
+	"name": "n8n-nodes-swiftgum",
+	"version": "1.0.0",
+	"description": "Swiftgum nodes for n8n",
+	"main": "dist/nodes/SwiftgumTrigger.node.js",
 	"scripts": {
 		"build": "tsc && cp nodes/*.png dist/nodes/",
-		"start": "N8N_CUSTOM_EXTENSIONS=dist/nodes n8n"
+		"start:dev": "dotenv -e .env -- n8n",
+		"start:prod": "dotenv -e .env.production -- n8n",
+		"start": "dotenv -e .env -- N8N_CUSTOM_EXTENSIONS=dist/nodes n8n"
 	},
-	"main": "dist/nodes/SwiftgumTrigger.node.js",
 	"n8n": {
 		"nodes": [
 			"dist/nodes/SwiftgumTrigger.node.js"
@@ -20,12 +25,16 @@
 		"typescript": "^5.8.3"
 	},
 	"dependencies": {
+		"dotenv": "^16.5.0",
 		"sqlite3": "^5.1.7"
 	},
-	"name": "n8n-swiftgum",
-	"version": "1.0.0",
-	"keywords": [],
-	"author": "",
+	"author": "Arthur B. <arthur@swiftgum.com>",
 	"license": "ISC",
-	"description": ""
+	"keywords": [
+		"n8n",
+		"n8n-nodes",
+		"automation",
+		"integration",
+		"swiftgum"
+	]
 }

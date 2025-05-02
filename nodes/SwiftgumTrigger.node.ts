@@ -12,8 +12,10 @@ import {
 
 
 import * as crypto from 'crypto';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const BASE_URL = 'http://localhost:3000/api/v1';
+const BASE_URL = `${process.env.SWIFTGUM_API_ORIGIN}/api/v1`
 
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -171,9 +173,6 @@ export class SwiftgumTrigger implements INodeType {
       },
     },
   };
-  
-
-
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	const schemaFilter = this.getNodeParameter('schemaId') as string[];
