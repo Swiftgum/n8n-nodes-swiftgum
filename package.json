@@ -1,0 +1,31 @@
+{
+	"scripts": {
+		"build": "tsc && cp nodes/*.png dist/nodes/",
+		"start": "N8N_CUSTOM_EXTENSIONS=dist/nodes n8n"
+	},
+	"main": "dist/nodes/SwiftgumTrigger.node.js",
+	"n8n": {
+		"nodes": [
+			"dist/nodes/SwiftgumTrigger.node.js"
+		],
+		"credentials": [
+			"dist/credentials/SwiftgumApi.credentials.js"
+		]
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.3",
+		"axios": "^1.9.0",
+		"n8n-core": "^1.14.1",
+		"n8n-workflow": "^1.82.0",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"sqlite3": "^5.1.7"
+	},
+	"name": "n8n-swiftgum",
+	"version": "1.0.0",
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": ""
+}

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2020",                  // modern enough for n8n-core
+    "module": "commonjs",                // produce require()-style modules
+    "rootDir": ".", 
+    "outDir": "dist",              // emit JS alongside
+    "declaration": true,                 // generate .d.ts for your nodes
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,                // ⛔️ ignore errors in node_modules
+    "resolveJsonModule": true
+  },
+  "include": ["nodes", "credentials"],
+  "exclude": ["node_modules", "dist"]    // don’t touch these
+}
