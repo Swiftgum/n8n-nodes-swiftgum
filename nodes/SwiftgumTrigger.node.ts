@@ -10,12 +10,9 @@ import {
   IHookFunctions,
 } from 'n8n-workflow';
 
-
 import * as crypto from 'crypto';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
-const BASE_URL = `${process.env.SWIFTGUM_API_ORIGIN}/api/v1`
+const BASE_URL = 'https://api.swiftgum.com/api/v1';
 
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
