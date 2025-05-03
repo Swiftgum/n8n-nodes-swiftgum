@@ -11,7 +11,7 @@ import {
 } from 'n8n-workflow';
 import * as crypto from 'crypto';
 
-const BASE_URL = 'https://api.swiftgum.com/api/v1';
+const BASE_URL = 'https://app.swiftgum.com/api/v1';
 
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
