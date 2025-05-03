@@ -78,6 +78,24 @@ Pull requests and contributions are welcome! Please:
 
 ---
 
+## 🚀 Publishing
+
+If you're making changes to this node and want to publish them to npm:
+
+1. Bump the version:
+   ```bash
+   pnpm version patch   # or minor / major
+   ```
+
+2. Publish to npm:
+   ```bash
+   pnpm publish --access public
+   ```
+
+> 📦 npm does not allow publishing the same version twice. Always increment the version before running `pnpm publish`.
+
+---
+
 ## 📄 License
 
 [MIT](LICENSE.md)
