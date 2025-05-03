@@ -42,10 +42,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/SwiftgumApi.credentials.ts"
+      "dist/credentials/SwiftgumApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Swiftgum/Swiftgum.node.js"
+      "dist/nodes/SwiftgumTrigger/SwiftgumTrigger.node.js"
     ]
   },
   "devDependencies": {
