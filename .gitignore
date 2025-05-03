@@ -1,39 +1,8 @@
-# Node.js dependencies
-node_modules/
-
-# Build output
-dist/
-
-# Logs
-logs
-*.log
+node_modules
+.DS_Store
+.tmp
+tmp
+dist
 npm-debug.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-# OS-specific
-.DS_Store
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# IDEs
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Git
-.git/
-
-# Optional: macOS specific
-._*
-
-# Optional: macOS specific
-.DS_Store
-
+yarn.lock
+.vscode/launch.json

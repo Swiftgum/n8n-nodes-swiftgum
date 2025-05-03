@@ -20,7 +20,7 @@ export class SwiftgumTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
     	description: 'Listen for Swiftgum PDF extraction webhooks, filtered by schema. To test, upload a PDF in your Swiftgum workspace — this node will emit the extracted data once processed.',
-		icon: 'file:swiftgum.png',
+		icon: 'file:logo.svg',
 		defaults: {
 			name: 'Swiftgum Trigger',
 		},
