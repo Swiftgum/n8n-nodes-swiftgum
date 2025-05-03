@@ -1,40 +1,63 @@
 {
-	"name": "n8n-nodes-swiftgum",
-	"version": "1.0.0",
-	"description": "Swiftgum nodes for n8n",
-	"main": "dist/nodes/SwiftgumTrigger.node.js",
-	"scripts": {
-		"build": "tsc && cp nodes/*.png dist/nodes/",
-		"start:dev": "dotenv -e .env -- n8n",
-		"start:prod": "dotenv -e .env.production -- n8n",
-		"start": "dotenv -e .env -- N8N_CUSTOM_EXTENSIONS=dist/nodes n8n"
-	},
-	"n8n": {
-		"nodes": [
-			"dist/nodes/SwiftgumTrigger.node.js"
-		],
-		"credentials": [
-			"dist/credentials/SwiftgumApi.credentials.js"
-		]
-	},
-	"devDependencies": {
-		"@types/node": "^22.15.3",
-		"axios": "^1.9.0",
-		"n8n-core": "^1.14.1",
-		"n8n-workflow": "^1.82.0",
-		"typescript": "^5.8.3"
-	},
-	"dependencies": {
-		"dotenv": "^16.5.0",
-		"sqlite3": "^5.1.7"
-	},
-	"author": "Arthur B. <arthur@swiftgum.com>",
-	"license": "ISC",
-	"keywords": [
-		"n8n",
-		"n8n-nodes",
-		"automation",
-		"integration",
-		"swiftgum"
-	]
+  "name": "n8n-nodes-swiftgum-trigger",
+  "version": "0.1.0",
+  "description": "Swiftgum nodes for n8n",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "n8n-nodes",
+    "automation",
+    "integration",
+    "swiftgum",
+    "trigger"
+  ],
+  "license": "MIT",
+  "homepage": "https://swiftgum.com/",
+  "author": {
+    "name": "Arthur B.",
+    "email": "arthur@swiftgum.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Swiftgum/n8n-nodes-swiftgum"
+  },
+  "engines": {
+    "node": ">=18.10",
+    "pnpm": ">=9.1"
+  },
+  "packageManager": "pnpm@9.1.4",
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/SwiftgumApi.credentials.ts"
+    ],
+    "nodes": [
+      "dist/nodes/Swiftgum/Swiftgum.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.1",
+    "gulp": "^4.0.2",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
 }

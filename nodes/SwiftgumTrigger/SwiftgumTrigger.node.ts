@@ -9,7 +9,6 @@ import {
 	INodeOutputConfiguration,
   IHookFunctions,
 } from 'n8n-workflow';
-
 import * as crypto from 'crypto';
 
 const BASE_URL = 'https://api.swiftgum.com/api/v1';
@@ -18,13 +17,11 @@ export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Swiftgum Trigger',
 		name: 'swiftgumTrigger',
-		icon: 'file:swiftgum.png',
 		group: ['trigger'],
 		version: 1,
     description: 'Listen for Swiftgum PDF extraction webhooks, filtered by schema. To test, upload a PDF in your Swiftgum workspace — this node will emit the extracted data once processed.',
 		defaults: {
 			name: 'Swiftgum Trigger',
-			color: '#1b82e2',
 		},
 		inputs: [],
 		outputs: [{ type: 'main' }] as INodeOutputConfiguration[],
@@ -44,13 +41,12 @@ export class SwiftgumTrigger implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Schema (optional)',
+				displayName: 'Schema (Optional) Names or IDs',
 				name: 'schemaId',
 				type: 'multiOptions',
 				typeOptions: { loadOptionsMethod: 'getSchemas' },
 				default: [],
-				required: false,
-				description: 'Only emit events matching these schemas; leave empty to receive all',
+				description: 'Only emit events matching these schemas; leave empty to receive all. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 			},
 		],
 	};
@@ -86,7 +82,6 @@ export class SwiftgumTrigger implements INodeType {
       async checkExists(this: IHookFunctions): Promise<boolean> {
         const webhookData = this.getWorkflowStaticData('node');
         const exists = !!webhookData.subscriptionId;
-        console.log('[SwiftgumTrigger] checkExists ->', exists);
         return exists;
       },
   
@@ -100,8 +95,6 @@ export class SwiftgumTrigger implements INodeType {
           body.schemaIds = schemaIds;
         }
       
-        console.log('[SwiftgumTrigger] Creating webhook with body:', body);
-      
         const response = await this.helpers.request({
           method: 'POST',
           uri: `${BASE_URL}/webhooks/subscribe`,
@@ -114,7 +107,7 @@ export class SwiftgumTrigger implements INodeType {
       
         // Fetch schema names if any were selected
         if (schemaIds.length) {
-          const schemaResponse = await this.helpers.request({
+          await this.helpers.request({
             method: 'GET',
             uri: `${BASE_URL}/schemas`,
             headers: {
@@ -122,14 +115,7 @@ export class SwiftgumTrigger implements INodeType {
             },
             json: true,
           });
-      
-          const allSchemas = schemaResponse as Array<{ id: string; name: string }>;
-          const matched = allSchemas.filter(s => schemaIds.includes(s.id));
-          const names = matched.map(s => s.name).join(', ');
-          console.log(`[Swiftgum] Webhook created for schema(s): ${names}. Upload a PDF to test.`);
-        } else {
-          console.log(`[Swiftgum] Webhook created for ALL schemas. Upload a PDF to test.`);
-        }
+        } 
       
         const webhookData = this.getWorkflowStaticData('node');
         webhookData.subscriptionId = response.id;
@@ -143,11 +129,8 @@ export class SwiftgumTrigger implements INodeType {
         const webhookData = this.getWorkflowStaticData('node');
   
         if (!webhookData.subscriptionId) {
-          console.log('[SwiftgumTrigger] No webhook to delete.');
           return true;
         }
-  
-        console.log('[SwiftgumTrigger] Deleting webhook ID:', webhookData.subscriptionId);
   
         try {
           await this.helpers.request({
@@ -158,9 +141,7 @@ export class SwiftgumTrigger implements INodeType {
             },
             json: true,
           });
-          console.log('[SwiftgumTrigger] Webhook deleted.');
         } catch (error) {
-          console.warn('[SwiftgumTrigger] Failed to delete webhook:', error.message);
         }
   
         delete webhookData.subscriptionId;
