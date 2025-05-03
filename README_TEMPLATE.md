@@ -1,48 +1,101 @@
-# n8n-nodes-_node-name_
+![Swiftgum n8n Node](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-This is an n8n community node. It lets you use _app/service name_ in your n8n workflows.
+# n8n-nodes-swiftgum-trigger
 
-_App/service name_ is _one or two sentences describing the service this node integrates with_.
+A custom [n8n](https://n8n.io) trigger node built by Swiftgum.
 
-[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
+This node allows you to trigger workflows from Swiftgum-related events or integrations.
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials)  <!-- delete if no auth needed -->  
-[Compatibility](#compatibility)  
-[Usage](#usage)  <!-- delete if not using this section -->  
-[Resources](#resources)  
-[Version history](#version-history)  <!-- delete if not using this section -->  
+---
 
-## Installation
+## 🚀 Features
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+- Custom trigger node for Swiftgum-specific events
+- Built for compatibility with the latest n8n versions
+- Ready to use in your local or cloud-hosted n8n instance
 
-## Operations
+---
 
-_List the operations supported by your node._
+## 🧰 Installation
 
-## Credentials
+You can install this package directly via the n8n UI or CLI.
 
-_If users need to authenticate with the app/service, provide details here. You should include prerequisites (such as signing up with the service), available authentication methods, and how to set them up._
+### Via n8n UI
 
-## Compatibility
+Paste this URL into the **Install from npm** input:
 
-_State the minimum n8n version, as well as which versions you test against. You can also include any known version incompatibility issues._
+```
+https://www.npmjs.com/package/n8n-nodes-swiftgum-trigger
+```
 
-## Usage
+### Via CLI (inside your custom n8n setup)
 
-_This is an optional section. Use it to help users with any difficult or confusing aspects of the node._
+```bash
+pnpm add n8n-nodes-swiftgum-trigger
+```
 
-_By the time users are looking for community nodes, they probably already know n8n basics. But if you expect new users, you can link to the [Try it out](https://docs.n8n.io/try-it-out/) documentation to help them get started._
+---
 
-## Resources
+## 🧪 Local Development
 
-* [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-* _Link to app/service documentation._
+To test this node locally:
 
-## Version history
+```bash
+pnpm install
+pnpm build
+```
 
-_This is another optional section. If your node has multiple versions, include a short description of available versions and what changed, as well as any compatibility impact._
+You can also use our internal dev environment with Docker:
 
+```bash
+./fetch-node.sh
+docker compose up --build
+```
 
+---
+
+## 🗂 File Structure
+
+```
+n8n-nodes-swiftgum-trigger/
+├── credentials/           # Custom credential classes
+├── nodes/                 # Swiftgum Trigger node definition
+├── dist/                  # Compiled output
+├── gulpfile.js            # Icon handling
+├── tsconfig.json
+├── package.json
+└── README.md
+```
+
+---
+
+## 🧑‍💻 Contributing
+
+Pull requests and contributions are welcome! Please:
+- Follow the code structure in `nodes/` and `credentials/`
+- Run `pnpm lint` before submitting
+- Build locally and test in a running n8n instance
+
+---
+
+## 🚀 Publishing
+
+If you're making changes to this node and want to publish them to npm:
+
+1. Bump the version:
+   ```bash
+   pnpm version patch   # or minor / major
+   ```
+
+2. Publish to npm:
+   ```bash
+   pnpm publish --access public
+   ```
+
+> 📦 npm does not allow publishing the same version twice. Always increment the version before running `pnpm publish`.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE.md)
