@@ -59,8 +59,5 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
-  },
-  "dependencies": {
-    "n8n-nodes-swiftgum-trigger": "file:/Users/arthurbonnecarrere/Coding/pdf-automation/n8n-nodes-swiftgum"
   }
 }
