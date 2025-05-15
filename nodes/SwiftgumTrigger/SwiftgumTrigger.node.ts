@@ -57,29 +57,30 @@ export class SwiftgumTrigger implements INodeType {
 
 	methods = {
 		loadOptions: {
-			async getSchemas(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+			async getSchemas(
+				this: ILoadOptionsFunctions, 
+				includeDeleted = false
+			): Promise<INodePropertyOptions[]> {
 				const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
-
+	
 				if (!apiKey) {
 					return [];
 				}
-
+	
 				const response = await this.helpers.request({
 					method: 'GET',
 					uri: `${BASE_URL}/schemas`,
+					qs: { includeDeleted },  // ⬅️ Add the query param here
 					headers: {
 						'X-API-Key': apiKey,
 					},
 					json: true,
 				});
-
-				return (response as Array<{ id: string; name: string; deleted_at?: string | null }> )
-					.filter((s) => s.deleted_at === null || s.deleted_at === undefined) // Keep only non-deleted
-					.map((s) => ({
-						name: s.name,
-						value: s.id,
-					}));
-
+	
+				return (response as Array<{ id: string; name: string }>).map((s) => ({
+					name: s.name,
+					value: s.id,
+				}));
 			},
 		},
 	};
