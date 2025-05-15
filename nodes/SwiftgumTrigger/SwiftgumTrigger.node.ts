@@ -142,7 +142,7 @@ export class SwiftgumTrigger implements INodeType {
 		webhookData.signingSecret = response.secret;
 	
 		return true;
-	}
+	},
 	
       async delete(this: IHookFunctions): Promise<boolean> {
         const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
