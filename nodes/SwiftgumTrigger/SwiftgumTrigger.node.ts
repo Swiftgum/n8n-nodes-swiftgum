@@ -12,7 +12,7 @@ import {
 const crypto = require('crypto');
 
 // const BASE_URL = 'https://app.swiftgum.com/api/v1';
-const BASE_URL = 'http://localhost:3000/api/v1';
+const BASE_URL = 'http://host.docker.internal:3000/api/v1';
 
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
