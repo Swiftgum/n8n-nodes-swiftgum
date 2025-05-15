@@ -97,7 +97,8 @@ export class SwiftgumTrigger implements INodeType {
         if (schemaIds.length) {
           body.schemaIds = schemaIds;
         }
-      
+		console.log('Creating subscription with body:', JSON.stringify(body, null, 2));
+
         const response = await this.helpers.request({
           method: 'POST',
           uri: `${BASE_URL}/webhooks/subscribe`,
@@ -107,6 +108,8 @@ export class SwiftgumTrigger implements INodeType {
           body,
           json: true,
         });
+
+		console.log('Subscription response:', JSON.stringify(response, null, 2));
       
         const webhookData = this.getWorkflowStaticData('node');
         webhookData.subscriptionId = response.id;
