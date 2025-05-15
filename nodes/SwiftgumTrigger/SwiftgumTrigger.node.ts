@@ -151,17 +151,13 @@ export class SwiftgumTrigger implements INodeType {
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	const body = this.getBodyData() as IDataObject;
-	console.log('🔧 [Webhook] Raw Body:', JSON.stringify(body, null, 2));
 
 	const { signingSecret } = this.getWorkflowStaticData('node');
-	console.log('🔧 [Webhook] Signing Secret:', signingSecret);
 
 	if (signingSecret) {
 		const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
-		console.log('🔧 [Webhook] Signature Header:', sigHeader);
 
 		if (!sigHeader) {
-			console.log('⚠️ [Webhook] Missing Signature Header. Aborting.');
 			return { noWebhookResponse: true };
 		}
 
@@ -171,47 +167,15 @@ export class SwiftgumTrigger implements INodeType {
 			.update(raw)
 			.digest('hex');
 
-		console.log('🔧 [Webhook] Expected Signature:', expected);
-
 		if (sigHeader !== expected) {
 			console.log('⚠️ [Webhook] Signature Mismatch. Aborting.');
 			return { noWebhookResponse: true };
 		}
 	}
 
-	const job = body.job as IDataObject;
-	const fields = job?.result ?? [];
-	console.log('📦 [Webhook] Extracted job.result:', fields);
-
-	const meta = {
-		jobId: job?.id,
-		schemaId: job?.schemaId,
-		status: job?.status,
+	return {
+		workflowData: [this.helpers.returnJsonArray([body])],
 	};
-	console.log('🔧 [Webhook] Metadata:', meta);
-
-	let items: IDataObject[] = [];
-
-	if (Array.isArray(fields)) {
-		console.log('📚 [Webhook] job.result is an array. Mapping items...');
-		items = fields.map((field) => ({ ...field, ...meta }));
-	} else if (typeof fields === 'object' && fields !== null) {
-		console.log('📚 [Webhook] job.result is an object. Wrapping as single item...');
-		items = [{ ...(fields as IDataObject), ...meta }];
-	} else {
-		console.log('📚 [Webhook] job.result is a primitive. Wrapping in value field...');
-		items = [{ value: fields as any, ...meta }];
-	}
-
-	console.log('✅ [Webhook] Final Mapped Items:', JSON.stringify(items, null, 2));
-
-	const response = {
-		workflowData: [this.helpers.returnJsonArray(items)],
-	};
-
-	console.log('📤 [Webhook] Final Response:', JSON.stringify(response, null, 2));
-
-	return response;
 }
 
   
