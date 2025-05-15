@@ -15,6 +15,7 @@ const crypto = require('crypto');
 // const BASE_URL = 'http://host.docker.internal:3000/api/v1';
 export const BASE_URL = 'http://host.docker.internal:3000/api/v1';
 
+
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Swiftgum Trigger',
@@ -82,69 +83,40 @@ export class SwiftgumTrigger implements INodeType {
 
   webhookMethods = {
     default: {
-
-		async checkExists(this: IHookFunctions) {
-			const uiId     = this.getNodeParameter('subscriptionId', '') as string;
-			const data     = this.getWorkflowStaticData('node');
-			data.subscriptionId = data.subscriptionId || uiId;   // prefer stored, else UI
-			return !!data.subscriptionId;
-		  },
-		  
-		  async update(this: IHookFunctions) {
-			const { apiKey }    = await this.getCredentials('swiftgumApi') as { apiKey: string };
-			const data          = this.getWorkflowStaticData('node');
-			const webhookUrl    = this.getNodeWebhookUrl('default');
-			const schemaIds     = this.getNodeParameter('schemaId') as string[];
-		  
-			const body: IDataObject = { targetUrl: webhookUrl };
-			if (schemaIds.length) body.schemaIds = schemaIds;
-		  
-			await this.helpers.request({
-			  method : 'PATCH',                                 // or 'PUT'
-			  uri    : `${BASE_URL}/webhooks/${data.subscriptionId}`,
-			  headers: { 'X-API-Key': apiKey },
-			  body,
-			  json   : true,
-			});
-		  
-			return true;
-		  },
-		  
-		  async create(this: IHookFunctions): Promise<boolean> {
-			const { apiKey } = await this.getCredentials('swiftgumApi') as { apiKey: string };
-			const webhookUrl = this.getNodeWebhookUrl('default');
-			const schemaIds = this.getNodeParameter('schemaId') as string[];
-		
-			const body: IDataObject = { targetUrl: webhookUrl };
-			if (schemaIds.length) {
-				body.schemaIds = schemaIds;
-			}
-		
-			console.log('[Webhook Create] Sending body:', JSON.stringify(body, null, 2));
-		
-			try {
-				const response = await this.helpers.request({
-					method: 'POST',
-					uri: `${BASE_URL}/webhooks/subscribe`,
-					headers: { 'X-API-Key': apiKey },
-					body,
-					json: true,
-				});
-		
-				const data = this.getWorkflowStaticData('node');
-				data.subscriptionId = response.id;
-				data.signingSecret = response.secret;
-		
-				console.log('[Webhook Create] Subscription created successfully.');
-				return true;
-			} catch (error) {
-				console.error('[Webhook Create] Failed to create subscription:', error.message);
-				throw new Error(`Failed to create subscription: ${error.message}`);
-			}
-		},
-		
-	
-	
+      async checkExists(this: IHookFunctions): Promise<boolean> {
+        const webhookData = this.getWorkflowStaticData('node');
+        const exists = !!webhookData.subscriptionId;
+        return exists;
+      },
+  
+      async create(this: IHookFunctions): Promise<boolean> {
+        const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
+        const webhookUrl = this.getNodeWebhookUrl('default');
+        const schemaIds = this.getNodeParameter('schemaId') as string[];
+      
+        const body: IDataObject = { targetUrl: webhookUrl };
+        if (schemaIds.length) {
+          body.schemaIds = schemaIds;
+        }
+      
+        const response = await this.helpers.request({
+          method: 'POST',
+          uri: `${BASE_URL}/webhooks/subscribe`,
+          headers: {
+            'X-API-Key': apiKey,
+          },
+          body,
+          json: true,
+        });
+      
+      
+        const webhookData = this.getWorkflowStaticData('node');
+        webhookData.subscriptionId = response.id;
+        webhookData.signingSecret = response.secret;
+      
+        return true;
+      },
+      
       async delete(this: IHookFunctions): Promise<boolean> {
         const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
         const webhookData = this.getWorkflowStaticData('node');
@@ -170,60 +142,53 @@ export class SwiftgumTrigger implements INodeType {
   
         return true;
       },
-
-	  async manualWebhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		// Properly tell n8n to wait for incoming HTTP request
-		return {
-			noWebhookResponse: true,
-		};
-	}		
-
     },
   };
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+	const schemaFilter = this.getNodeParameter('schemaId') as string[];
 	const body = this.getBodyData() as IDataObject;
+  
 	const { signingSecret } = this.getWorkflowStaticData('node');
-
+  
 	if (signingSecret) {
-		const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
+	  const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
+	  if (!sigHeader) return { noWebhookResponse: true };
+  
+	  const raw = JSON.stringify(body ?? {});
+	  const expected = crypto
+		.createHmac('sha256', signingSecret as string)
+		.update(raw)
+		.digest('hex');
+	  
 
-		if (!sigHeader) {
-			console.warn('[Swiftgum Webhook] Missing signature header.');
-			return { noWebhookResponse: true };
-		}
-
-		const rawBody = JSON.stringify(body ?? {});
-		const expectedSignature = crypto
-			.createHmac('sha256', signingSecret as string)
-			.update(rawBody)
-			.digest('hex');
-
-		if (sigHeader !== expectedSignature) {
-			console.warn(`[Swiftgum Webhook] Invalid signature. Expected: ${expectedSignature}, Received: ${sigHeader}`);
-			return { noWebhookResponse: true };
-		}
+	  if (sigHeader !== expected) return { noWebhookResponse: true };
 	}
+  
+	if (schemaFilter.length && !schemaFilter.includes(body.schemaId as string)) {
+	  return { noWebhookResponse: true };
+	}
+  
 	const fields = (body.fields ?? body.data ?? []) as unknown;
 	const meta = {
-		jobId: body.jobId,
-		schemaId: body.schemaId,
-		status: body.status,
+	  jobId: body.jobId,
+	  schemaId: body.schemaId,
+	  status: body.status,
 	};
-
+  
 	let items: IDataObject[] = [];
-
+  
 	if (Array.isArray(fields)) {
-		items = fields.map((field) => ({ ...field, ...meta }));
+	  items = fields.map((field) => ({ ...field, ...meta }));
 	} else if (typeof fields === 'object' && fields !== null) {
-		items = [{ ...(fields as IDataObject), ...meta }];
+	  items = [{ ...(fields as IDataObject), ...meta }];
 	} else {
-		items = [{ value: fields as any, ...meta }];
+	  items = [{ value: fields as any, ...meta }];
 	}
-
+  
 	return {
-		workflowData: [this.helpers.returnJsonArray(items)],
+	  workflowData: [this.helpers.returnJsonArray(items)],
 	};
-}
-
+  }
+  
 }
