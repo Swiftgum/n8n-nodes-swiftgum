@@ -88,35 +88,62 @@ export class SwiftgumTrigger implements INodeType {
         return exists;
       },
   
-      async create(this: IHookFunctions): Promise<boolean> {
-        const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
-        const webhookUrl = this.getNodeWebhookUrl('default');
-        const schemaIds = this.getNodeParameter('schemaId') as string[];
-      
-		console.log('Schema IDs:', JSON.stringify(schemaIds, null, 2));
-        const body: IDataObject = { targetUrl: webhookUrl };
-        if (schemaIds.length) {
-          body.schemaIds = schemaIds;
-        }
-
-		console.log('Creating subscription with body:', JSON.stringify(body, null, 2));
-        const response = await this.helpers.request({
-          method: 'POST',
-          uri: `${BASE_URL}/webhooks/subscribe`,
-          headers: {
-            'X-API-Key': apiKey,
-          },
-          body,
-          json: true,
-        }); 
-      
-        const webhookData = this.getWorkflowStaticData('node');
-        webhookData.subscriptionId = response.id;
-        webhookData.signingSecret = response.secret;
-      
-        return true;
-      },
-      
+	  async create(this: IHookFunctions): Promise<boolean> {
+		const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
+		const webhookUrl = this.getNodeWebhookUrl('default');
+		const schemaIds = this.getNodeParameter('schemaId') as string[];
+	
+		const webhookData = this.getWorkflowStaticData('node');
+	
+		const body: IDataObject = { targetUrl: webhookUrl };
+		if (schemaIds.length) {
+			body.schemaIds = schemaIds;
+		}
+	
+		// If a subscription already exists, update it instead of creating a new one
+		if (webhookData.subscriptionId) {
+			console.log('[Webhook Create] Existing subscription found. Updating instead...');
+			console.log('[Webhook Create] PATCH Body:', JSON.stringify(body, null, 2));
+	
+			const response = await this.helpers.request({
+				method: 'PATCH',
+				uri: `${BASE_URL}/webhooks/${webhookData.subscriptionId}`,
+				headers: { 'X-API-Key': apiKey },
+				body,
+				json: true,
+			});
+	
+			console.log('[Webhook Create] Updated subscription response:', JSON.stringify(response, null, 2));
+	
+			// Optionally update signingSecret if it's returned again on update (if not, remove this line)
+			if (response.secret) {
+				webhookData.signingSecret = response.secret;
+			}
+	
+			return true;
+		}
+	
+		// No existing subscription found; create a new one
+		console.log('[Webhook Create] No existing subscription. Creating a new one...');
+		console.log('[Webhook Create] POST Body:', JSON.stringify(body, null, 2));
+	
+		const response = await this.helpers.request({
+			method: 'POST',
+			uri: `${BASE_URL}/webhooks/subscribe`,
+			headers: { 'X-API-Key': apiKey },
+			body,
+			json: true,
+		});
+	
+		console.log('[Webhook Create] Created new subscription response:', JSON.stringify(response, null, 2));
+	
+		// Store the new subscription details
+		webhookData.subscriptionId = response.id;
+		webhookData.signingSecret = response.secret;
+	
+		return true;
+	}
+	
       async delete(this: IHookFunctions): Promise<boolean> {
         const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
         const webhookData = this.getWorkflowStaticData('node');
