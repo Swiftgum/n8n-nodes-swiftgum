@@ -1,4 +1,4 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import { ICredentialType, INodeProperties, IHttpRequestMethods, ICredentialTestRequest } from 'n8n-workflow';
 
 export class SwiftgumApi implements ICredentialType {
   name = 'swiftgumApi';
@@ -17,4 +17,16 @@ export class SwiftgumApi implements ICredentialType {
       description: 'Your Swiftgum API key (will be sent as a Bearer token)',
     },
   ];
+
+  // Add the test configuration to validate the credentials in n8n UI
+  test: ICredentialTestRequest = {
+    request: {
+      method: 'GET' as IHttpRequestMethods,
+      url: 'https://app.swiftgum.com/api/v1/auth/check',
+      headers: {
+        'X-API-Key': '={{$credentials.apiKey}}',
+      },
+    },
+  };
+  
 }

@@ -9,9 +9,10 @@ import {
 	INodeOutputConfiguration,
   IHookFunctions,
 } from 'n8n-workflow';
-import * as crypto from 'crypto';
+const crypto = require('crypto');
 
-const BASE_URL = 'https://app.swiftgum.com/api/v1';
+// const BASE_URL = 'https://app.swiftgum.com/api/v1';
+const BASE_URL = 'http://localhost:3000/api/v1';
 
 export class SwiftgumTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -156,47 +157,53 @@ export class SwiftgumTrigger implements INodeType {
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	const schemaFilter = this.getNodeParameter('schemaId') as string[];
 	const body = this.getBodyData() as IDataObject;
-  
 	const { signingSecret } = this.getWorkflowStaticData('node');
-  
-	if (signingSecret) {
-	  const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
-	  if (!sigHeader) return { noWebhookResponse: true };
-  
-	  const raw = JSON.stringify(body ?? {});
-	  const expected = crypto
-		.createHmac('sha256', signingSecret as string)
-		.update(raw)
-		.digest('hex');
-	  
 
-	  if (sigHeader !== expected) return { noWebhookResponse: true };
+	if (signingSecret) {
+		const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
+
+		if (!sigHeader) {
+			console.warn('[Swiftgum Webhook] Missing signature header.');
+			return { noWebhookResponse: true };
+		}
+
+		const rawBody = JSON.stringify(body ?? {});
+		const expectedSignature = crypto
+			.createHmac('sha256', signingSecret as string)
+			.update(rawBody)
+			.digest('hex');
+
+		if (sigHeader !== expectedSignature) {
+			console.warn(`[Swiftgum Webhook] Invalid signature. Expected: ${expectedSignature}, Received: ${sigHeader}`);
+			return { noWebhookResponse: true };
+		}
 	}
-  
+
 	if (schemaFilter.length && !schemaFilter.includes(body.schemaId as string)) {
-	  return { noWebhookResponse: true };
+		console.info(`[Swiftgum Webhook] Event filtered out. Schema ID: ${body.schemaId}`);
+		return { noWebhookResponse: true };
 	}
-  
+
 	const fields = (body.fields ?? body.data ?? []) as unknown;
 	const meta = {
-	  jobId: body.jobId,
-	  schemaId: body.schemaId,
-	  status: body.status,
+		jobId: body.jobId,
+		schemaId: body.schemaId,
+		status: body.status,
 	};
-  
+
 	let items: IDataObject[] = [];
-  
+
 	if (Array.isArray(fields)) {
-	  items = fields.map((field) => ({ ...field, ...meta }));
+		items = fields.map((field) => ({ ...field, ...meta }));
 	} else if (typeof fields === 'object' && fields !== null) {
-	  items = [{ ...(fields as IDataObject), ...meta }];
+		items = [{ ...(fields as IDataObject), ...meta }];
 	} else {
-	  items = [{ value: fields as any, ...meta }];
+		items = [{ value: fields as any, ...meta }];
 	}
-  
+
 	return {
-	  workflowData: [this.helpers.returnJsonArray(items)],
+		workflowData: [this.helpers.returnJsonArray(items)],
 	};
-  }
-  
+}
+
 }
