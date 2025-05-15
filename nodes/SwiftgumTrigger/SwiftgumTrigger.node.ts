@@ -73,10 +73,13 @@ export class SwiftgumTrigger implements INodeType {
 					json: true,
 				});
 
-				return (response as Array<{ id: string; name: string }>).map((s) => ({
-					name: s.name,
-					value: s.id,
-				}));
+				return (response as Array<{ id: string; name: string; deleted_at?: string | null }> )
+					.filter((s) => s.deleted_at === null || s.deleted_at === undefined) // Keep only non-deleted
+					.map((s) => ({
+						name: s.name,
+						value: s.id,
+					}));
+
 			},
 		},
 	};
@@ -146,7 +149,6 @@ export class SwiftgumTrigger implements INodeType {
   };
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-	const schemaFilter = this.getNodeParameter('schemaId') as string[];
 	const body = this.getBodyData() as IDataObject;
   
 	const { signingSecret } = this.getWorkflowStaticData('node');
@@ -163,10 +165,6 @@ export class SwiftgumTrigger implements INodeType {
 	  
 
 	  if (sigHeader !== expected) return { noWebhookResponse: true };
-	}
-  
-	if (schemaFilter.length && !schemaFilter.includes(body.schemaId as string)) {
-	  return { noWebhookResponse: true };
 	}
   
 	const fields = (body.fields ?? body.data ?? []) as unknown;
