@@ -108,7 +108,7 @@ export class SwiftgumTrigger implements INodeType {
           },
           body,
           json: true,
-        });
+        }); 
       
         const webhookData = this.getWorkflowStaticData('node');
         webhookData.subscriptionId = response.id;
