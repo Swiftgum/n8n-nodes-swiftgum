@@ -4,8 +4,7 @@ import { BASE_URL } from '../nodes/SwiftgumTrigger/SwiftgumTrigger.node';
 export class SwiftgumApi implements ICredentialType {
   name = 'swiftgumApi';
   displayName = 'Swiftgum API';
-  // icon = 'file:swiftgum.png';
-  documentationUrl = 'https://app.swiftgum.com';
+  documentationUrl = 'https://app.swiftgum.com/api/v1/docs';
 
   properties: INodeProperties[] = [
     {
@@ -15,7 +14,7 @@ export class SwiftgumApi implements ICredentialType {
       typeOptions: { password: true },
       default: '',
       required: true,
-      description: 'Your Swiftgum API key (will be sent as a Bearer token)',
+      description: 'Your Swiftgum API key. Go to https://app.swiftgum.com Developer > Api key to get your key.',
     },
   ];
 
