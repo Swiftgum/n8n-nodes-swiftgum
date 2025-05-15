@@ -8,7 +8,7 @@ import {
 	INodePropertyOptions,
 	INodeOutputConfiguration,
 	IHookFunctions,
-	INodeExecutionFunctions,
+	INodeExecuteFunctions,
 } from 'n8n-workflow';
 const crypto = require('crypto');
 
@@ -172,7 +172,7 @@ export class SwiftgumTrigger implements INodeType {
 
 	    // 🎯 Add This for the Test Button
 		action: {
-			async fetchTestData(this: INodeExecutionFunctions): Promise<void> {
+			async fetchTestData(this: INodeExecuteFunctions & ILoadOptionsFunctions): Promise<void> {
 				const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
 				if (!apiKey) throw new Error('Missing API Key.');
 	
