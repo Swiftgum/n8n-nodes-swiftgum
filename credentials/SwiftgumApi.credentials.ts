@@ -1,4 +1,5 @@
 import { ICredentialType, INodeProperties, IHttpRequestMethods, ICredentialTestRequest } from 'n8n-workflow';
+import { BASE_URL } from '../nodes/SwiftgumTrigger/SwiftgumTrigger.node';
 
 export class SwiftgumApi implements ICredentialType {
   name = 'swiftgumApi';
@@ -22,7 +23,7 @@ export class SwiftgumApi implements ICredentialType {
   test: ICredentialTestRequest = {
     request: {
       method: 'GET' as IHttpRequestMethods,
-      url: 'https://app.swiftgum.com/api/v1/auth/check',
+      url: BASE_URL,
       headers: {
         'X-API-Key': '={{$credentials.apiKey}}',
       },
