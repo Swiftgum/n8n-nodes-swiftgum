@@ -82,67 +82,57 @@ export class SwiftgumTrigger implements INodeType {
 
   webhookMethods = {
     default: {
-      async checkExists(this: IHookFunctions): Promise<boolean> {
-        const webhookData = this.getWorkflowStaticData('node');
-        const exists = !!webhookData.subscriptionId;
-        return exists;
-      },
-  
-	  async create(this: IHookFunctions): Promise<boolean> {
-		const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
-		const webhookUrl = this.getNodeWebhookUrl('default');
-		const schemaIds = this.getNodeParameter('schemaId') as string[];
-	
-		const webhookData = this.getWorkflowStaticData('node');
-	
-		const body: IDataObject = { targetUrl: webhookUrl };
-		if (schemaIds.length) {
-			body.schemaIds = schemaIds;
-		}
-	
-		// If a subscription already exists, update it instead of creating a new one
-		if (webhookData.subscriptionId) {
-			console.log('[Webhook Create] Existing subscription found. Updating instead...');
-			console.log('[Webhook Create] PATCH Body:', JSON.stringify(body, null, 2));
-	
-			const response = await this.helpers.request({
-				method: 'PATCH',
-				uri: `${BASE_URL}/webhooks/${webhookData.subscriptionId}`,
-				headers: { 'X-API-Key': apiKey },
-				body,
-				json: true,
+
+		async checkExists(this: IHookFunctions): Promise<boolean> {
+			const data = this.getWorkflowStaticData('node');
+			return !!data.subscriptionId;
+		  },
+	  
+		  async create(this: IHookFunctions): Promise<boolean> {
+			const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
+			const webhookUrl = this.getNodeWebhookUrl('default');
+			const schemaIds  = this.getNodeParameter('schemaId') as string[];
+	  
+			const body: IDataObject = { targetUrl: webhookUrl };
+			if (schemaIds.length) body.schemaIds = schemaIds;
+	  
+			const res = await this.helpers.request({
+			  method : 'POST',
+			  uri    : `${BASE_URL}/webhooks/subscribe`,
+			  headers: { 'X-API-Key': apiKey },
+			  body,
+			  json   : true,
 			});
-	
-			console.log('[Webhook Create] Updated subscription response:', JSON.stringify(response, null, 2));
-	
-			// Optionally update signingSecret if it's returned again on update (if not, remove this line)
-			if (response.secret) {
-				webhookData.signingSecret = response.secret;
-			}
-	
+	  
+			const data = this.getWorkflowStaticData('node');
+			data.subscriptionId = res.id;
+			data.signingSecret  = res.secret;
 			return true;
-		}
-	
-		// No existing subscription found; create a new one
-		console.log('[Webhook Create] No existing subscription. Creating a new one...');
-		console.log('[Webhook Create] POST Body:', JSON.stringify(body, null, 2));
-	
-		const response = await this.helpers.request({
-			method: 'POST',
-			uri: `${BASE_URL}/webhooks/subscribe`,
-			headers: { 'X-API-Key': apiKey },
-			body,
-			json: true,
-		});
-	
-		console.log('[Webhook Create] Created new subscription response:', JSON.stringify(response, null, 2));
-	
-		// Store the new subscription details
-		webhookData.subscriptionId = response.id;
-		webhookData.signingSecret = response.secret;
-	
-		return true;
-	},
+		  },
+	  
+		  /** ← new */
+		  async update(this: IHookFunctions): Promise<boolean> {
+			const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
+			const data       = this.getWorkflowStaticData('node');
+			const webhookUrl = this.getNodeWebhookUrl('default');
+			const schemaIds  = this.getNodeParameter('schemaId') as string[];
+	  
+			const body: IDataObject = { targetUrl: webhookUrl };
+			if (schemaIds.length) body.schemaIds = schemaIds;
+	  
+			await this.helpers.request({
+			  method : 'PATCH',                      // or 'PUT'
+			  uri    : `${BASE_URL}/webhooks/${data.subscriptionId}`,
+			  headers: { 'X-API-Key': apiKey },
+			  body,
+			  json   : true,
+			});
+	  
+			// if your backend returns a new secret on update, save it here
+			// data.signingSecret = response.secret;
+	  
+			return true;
+		  },
 	
       async delete(this: IHookFunctions): Promise<boolean> {
         const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
