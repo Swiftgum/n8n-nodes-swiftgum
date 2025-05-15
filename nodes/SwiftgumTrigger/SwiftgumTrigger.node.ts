@@ -7,7 +7,8 @@ import {
 	IDataObject,
 	INodePropertyOptions,
 	INodeOutputConfiguration,
-  IHookFunctions,
+	IHookFunctions,
+	INodeExecutionFunctions,
 } from 'n8n-workflow';
 const crypto = require('crypto');
 
@@ -51,6 +52,17 @@ export class SwiftgumTrigger implements INodeType {
 				default: [],
 				description: 'Only emit events matching these schemas; leave empty to receive all. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 			},
+			{
+				displayName: 'Fetch Test Data',
+				name: 'fetchTestData',
+				type: 'button',
+				default: '',
+				typeOptions: {
+					action: 'fetchTestData',
+				},
+				description: 'Click to fetch sample data from Swiftgum.',
+			},
+			
 		],
 	};
 
@@ -152,6 +164,45 @@ export class SwiftgumTrigger implements INodeType {
   
         return true;
       },
+
+	  async manualWebhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+		// This makes n8n "Listen" and wait for the webhook to be called.
+		return {};
+	  },
+
+	    // 🎯 Add This for the Test Button
+		action: {
+			async fetchTestData(this: INodeExecutionFunctions): Promise<void> {
+				const { apiKey } = (await this.getCredentials('swiftgumApi')) as { apiKey: string };
+				if (!apiKey) throw new Error('Missing API Key.');
+	
+				// Get schemaId(s) from node parameters
+				const schemaIds = this.getNodeParameter('schemaId', []) as string[];
+				const limit = 5; // Limit the number of test records
+	
+				// Build query parameters
+				const queryParams = new URLSearchParams();
+				queryParams.append('limit', String(limit));
+				if (schemaIds.length > 0) {
+					queryParams.append('schemaId', schemaIds[0]); // Assuming API supports one schemaId at a time
+				}
+	
+				const response = await this.helpers.request({
+					method: 'GET',
+					uri: `${BASE_URL}/files?${queryParams.toString()}`,
+					headers: { 'X-API-Key': apiKey },
+					json: true,
+				});
+	
+				// Log full response to help with debugging or inspection
+				console.log('Fetched Test Data from /files:', JSON.stringify(response, null, 2));
+	
+				// Use console.log instead of showMessage since it's not available
+				console.log(`Fetched ${response.data?.length ?? 0} test records successfully.`);
+			},
+		},
+		
+
     },
   };
 
