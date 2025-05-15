@@ -23,7 +23,7 @@ export class SwiftgumApi implements ICredentialType {
   test: ICredentialTestRequest = {
     request: {
       method: 'GET' as IHttpRequestMethods,
-      url: BASE_URL,
+      url: BASE_URL + '/auth/check',
       headers: {
         'X-API-Key': '={{$credentials.apiKey}}',
       },
