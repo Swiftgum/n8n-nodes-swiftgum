@@ -108,18 +108,6 @@ export class SwiftgumTrigger implements INodeType {
           json: true,
         });
       
-        // Fetch schema names if any were selected
-        if (schemaIds.length) {
-          await this.helpers.request({
-            method: 'GET',
-            uri: `${BASE_URL}/schemas`,
-            headers: {
-              'X-API-Key': apiKey,
-            },
-            json: true,
-          });
-        } 
-      
         const webhookData = this.getWorkflowStaticData('node');
         webhookData.subscriptionId = response.id;
         webhookData.signingSecret = response.secret;
@@ -154,9 +142,11 @@ export class SwiftgumTrigger implements INodeType {
       },
 
 	  async manualWebhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		// This makes n8n "Listen" and wait for the webhook to be called.
-		return {};
-	  },
+		// Properly tell n8n to wait for incoming HTTP request
+		return {
+			noWebhookResponse: true,
+		};
+	}		
 
     },
   };
