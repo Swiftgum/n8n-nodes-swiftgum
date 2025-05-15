@@ -95,6 +95,8 @@ export class SwiftgumTrigger implements INodeType {
 	  
 			const body: IDataObject = { targetUrl: webhookUrl };
 			if (schemaIds.length) body.schemaIds = schemaIds;
+
+			console.log('Creating subscription with body:', JSON.stringify(body, null, 2));
 	  
 			const res = await this.helpers.request({
 			  method : 'POST',
@@ -117,11 +119,12 @@ export class SwiftgumTrigger implements INodeType {
 			const webhookUrl = this.getNodeWebhookUrl('default');
 			const schemaIds  = this.getNodeParameter('schemaId') as string[];
 	  
+			console.log('Updating subscription with body:', JSON.stringify(webhookUrl, null, 2));
 			const body: IDataObject = { targetUrl: webhookUrl };
 			if (schemaIds.length) body.schemaIds = schemaIds;
 	  
 			await this.helpers.request({
-			  method : 'PATCH',                      // or 'PUT'
+			  method : 'PUT',                      // or 'PUT'
 			  uri    : `${BASE_URL}/webhooks/${data.subscriptionId}`,
 			  headers: { 'X-API-Key': apiKey },
 			  body,
