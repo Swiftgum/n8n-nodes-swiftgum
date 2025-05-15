@@ -85,6 +85,8 @@ export class SwiftgumTrigger implements INodeType {
 
 		async checkExists(this: IHookFunctions): Promise<boolean> {
 			const data = this.getWorkflowStaticData('node');
+			console.log('Subscription ID:', data.subscriptionId);
+			console.log('!!Subscription ID:', !!data.subscriptionId);
 			return !!data.subscriptionId;
 		  },
 	  
