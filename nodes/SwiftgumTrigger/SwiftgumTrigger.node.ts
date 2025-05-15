@@ -151,43 +151,61 @@ export class SwiftgumTrigger implements INodeType {
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 	const body = this.getBodyData() as IDataObject;
-  
-	const { signingSecret } = this.getWorkflowStaticData('node');
-  
-	if (signingSecret) {
-	  const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
-	  if (!sigHeader) return { noWebhookResponse: true };
-  
-	  const raw = JSON.stringify(body ?? {});
-	  const expected = crypto
-		.createHmac('sha256', signingSecret as string)
-		.update(raw)
-		.digest('hex');
-	  
+	console.log('🔧 [Webhook] Raw Body:', body);
 
-	  if (sigHeader !== expected) return { noWebhookResponse: true };
+	const { signingSecret } = this.getWorkflowStaticData('node');
+	console.log('🔧 [Webhook] Signing Secret:', signingSecret);
+
+	if (signingSecret) {
+		const sigHeader = this.getHeaderData()['x-swiftgum-signature'] as string;
+		console.log('🔧 [Webhook] Signature Header:', sigHeader);
+
+		if (!sigHeader) {
+			console.log('⚠️ [Webhook] Missing Signature Header. Aborting.');
+			return { noWebhookResponse: true };
+		}
+
+		const raw = JSON.stringify(body ?? {});
+		const expected = crypto
+			.createHmac('sha256', signingSecret as string)
+			.update(raw)
+			.digest('hex');
+
+		console.log('🔧 [Webhook] Expected Signature:', expected);
+
+		if (sigHeader !== expected) {
+			console.log('⚠️ [Webhook] Signature Mismatch. Aborting.');
+			return { noWebhookResponse: true };
+		}
 	}
-  
+
 	const fields = (body.fields ?? body.data ?? []) as unknown;
+	console.log('🔧 [Webhook] Fields:', fields);
+
 	const meta = {
-	  jobId: body.jobId,
-	  schemaId: body.schemaId,
-	  status: body.status,
+		jobId: body.jobId,
+		schemaId: body.schemaId,
+		status: body.status,
 	};
-  
+	console.log('🔧 [Webhook] Metadata:', meta);
+
 	let items: IDataObject[] = [];
-  
+
 	if (Array.isArray(fields)) {
-	  items = fields.map((field) => ({ ...field, ...meta }));
+		items = fields.map((field) => ({ ...field, ...meta }));
+		console.log('✅ [Webhook] Mapped Items (Array):', items);
 	} else if (typeof fields === 'object' && fields !== null) {
-	  items = [{ ...(fields as IDataObject), ...meta }];
+		items = [{ ...(fields as IDataObject), ...meta }];
+		console.log('✅ [Webhook] Mapped Items (Object):', items);
 	} else {
-	  items = [{ value: fields as any, ...meta }];
+		items = [{ value: fields as any, ...meta }];
+		console.log('✅ [Webhook] Mapped Items (Primitive):', items);
 	}
-  
+
 	return {
-	  workflowData: [this.helpers.returnJsonArray(items)],
+		workflowData: [this.helpers.returnJsonArray(items)],
 	};
-  }
+}
+
   
 }
