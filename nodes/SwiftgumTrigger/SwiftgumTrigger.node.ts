@@ -182,7 +182,6 @@ export class SwiftgumTrigger implements INodeType {
   };
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-	const schemaFilter = this.getNodeParameter('schemaId') as string[];
 	const body = this.getBodyData() as IDataObject;
 	const { signingSecret } = this.getWorkflowStaticData('node');
 
@@ -205,12 +204,6 @@ export class SwiftgumTrigger implements INodeType {
 			return { noWebhookResponse: true };
 		}
 	}
-
-	if (schemaFilter.length && !schemaFilter.includes(body.schemaId as string)) {
-		console.info(`[Swiftgum Webhook] Event filtered out. Schema ID: ${body.schemaId}`);
-		return { noWebhookResponse: true };
-	}
-
 	const fields = (body.fields ?? body.data ?? []) as unknown;
 	const meta = {
 		jobId: body.jobId,
