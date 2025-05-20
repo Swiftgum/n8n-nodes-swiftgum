@@ -9,7 +9,8 @@ import {
 	INodeOutputConfiguration,
 	IHookFunctions,
 } from 'n8n-workflow';
-const crypto = require('crypto');
+import { createHmac } from 'crypto'
+
 
 export const BASE_URL = 'https://app.swiftgum.com/api/v1';
 // export const BASE_URL = 'http://host.docker.internal:3000/api/v1';
@@ -161,8 +162,7 @@ export class SwiftgumTrigger implements INodeType {
 		}
 
 		const raw = JSON.stringify(body ?? {});
-		const expected = crypto
-			.createHmac('sha256', signingSecret as string)
+		const expected = createHmac('sha256', signingSecret as string)
 			.update(raw)
 			.digest('hex');
 
